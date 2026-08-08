@@ -5,7 +5,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Febyan Instans',
-  description: 'Capture our special moments together! 💑',
+  description: 'Capture our special moments together!',
   manifest: '/manifest.json',
   themeColor: '#ec4899',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',

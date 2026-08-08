@@ -59,12 +59,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
     const ctx = canvas.getContext('2d')
-    
-    // SELALU flip horizontal - hasil foto NORMAL
-    ctx.translate(canvas.width, 0)
-    ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0)
-    ctx.setTransform(1, 0, 0, 1, 0, 0)
     
     const photoData = canvas.toDataURL('image/jpeg', 0.9)
     setPhoto(photoData)
@@ -115,7 +110,6 @@ export default function CameraCapture({ onCapture, isUploading }) {
             playsInline
             muted
             className="w-full"
-            style={facingMode === 'user' ? { transform: 'scaleX(-1)' } : {}}
           />
         )}
         <canvas ref={canvasRef} className="hidden" />
