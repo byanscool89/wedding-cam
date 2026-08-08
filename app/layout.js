@@ -4,7 +4,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Wedding Photo Booth',
+  title: 'Febyan Instans',
   description: 'Capture our special moments together! 💑',
   manifest: '/manifest.json',
   themeColor: '#ec4899',

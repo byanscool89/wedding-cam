@@ -57,7 +57,7 @@ export default function GuestGallery() {
           >
             <img
               src={photo.public_url}
-              alt="Wedding moment"
+              alt="febyan's moment"
               className="w-full aspect-square object-cover"
             />
             
