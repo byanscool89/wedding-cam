@@ -96,16 +96,18 @@ export default function CameraCapture({ onCapture, isUploading }) {
     <div className="relative w-full max-w-md mx-auto">
       {/* Flash Effect */}
       {flash && (
-        <div className="fixed inset-0 bg-white z-50 animate-flash pointer-events-none"></div>
+        <div className="fixed inset-0 bg-white z-50 pointer-events-none" 
+          style={{ animation: 'flash 0.3s ease-out forwards' }}
+        />
       )}
 
       {/* Frame */}
       <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black">
         {/* Decorative corners */}
-        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-pink-400 rounded-tl-2xl z-10"></div>
-        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-pink-400 rounded-tr-2xl z-10"></div>
-        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-pink-400 rounded-bl-2xl z-10"></div>
-        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-pink-400 rounded-br-2xl z-10"></div>
+        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-pink-400 rounded-tl-2xl z-10" />
+        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-pink-400 rounded-tr-2xl z-10" />
+        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-pink-400 rounded-bl-2xl z-10" />
+        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-pink-400 rounded-br-2xl z-10" />
         
         {/* Watermark */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/80 backdrop-blur-sm px-4 py-1 rounded-full">
@@ -145,7 +147,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
               <FiCamera className="text-3xl text-white" />
             </button>
             
-            <div className="w-16"></div>
+            <div className="w-16" />
           </>
         ) : (
           <div className="flex gap-4 items-center">
@@ -163,7 +165,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
               className="bg-gradient-to-r from-green-400 to-emerald-500 p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50"
             >
               {isUploading ? (
-                <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
+                <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full" />
               ) : (
                 <FiCheck className="text-2xl text-white" />
               )}
