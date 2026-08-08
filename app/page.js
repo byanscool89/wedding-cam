@@ -12,7 +12,7 @@ export default function Home() {
   const [uploaded, setUploaded] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleCapture = async (photoData) => {
+  const handleCapture = async (photoData, senderName, resetCamera) => {
     setUploading(true)
     setError(null)
     
@@ -20,7 +20,10 @@ export default function Home() {
       const response = await fetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: photoData })
+        body: JSON.stringify({ 
+          image: photoData,
+          senderName: senderName 
+        })
       })
       
       const data = await response.json()
@@ -28,63 +31,69 @@ export default function Home() {
       if (!response.ok) throw new Error(data.error || 'Upload failed')
       
       setUploaded(true)
-      setTimeout(() => setUploaded(false), 5000)
+      
+      setTimeout(() => {
+        setUploaded(false)
+        setUploading(false)
+        if (resetCamera) resetCamera()
+      }, 2000)
+      
     } catch (err) {
       setError(err.message)
       console.error('Upload error:', err)
-    } finally {
       setUploading(false)
     }
   }
 
   return (
     <main className="min-h-screen relative" style={{
-      background: 'linear-gradient(135deg, #fdf2f8 0%, #fff1f2 25%, #fff5f5 50%, #fce7f3 75%, #fdf2f8 100%)'
+      background: 'linear-gradient(135deg, #fafafa 0%, #fff5f5 25%, #fdf2f8 50%, #fce7f3 75%, #fafafa 100%)'
     }}>
       {/* Floating particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute animate-float"
+            className="absolute"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${4 + Math.random() * 3}s`,
               fontSize: `${1.2 + Math.random() * 1.5}rem`,
-              opacity: 0.12
+              opacity: 0.12,
+              animation: 'float 6s ease-in-out infinite'
             }}
           >
-            {['💕', '✨', '🌸', '💝', '🕊️', '💒', '💍', '🥂'][Math.floor(Math.random() * 8)]}
+            {['📸', '✨', '🎬', '💫', '🌟', '🎯', '💡', '🔥'][Math.floor(Math.random() * 8)]}
           </div>
         ))}
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-lg">
-        {/* Header - Arip & Iyan */}
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-block bg-white/70 backdrop-blur-sm rounded-full px-6 py-2 mb-4 shadow-lg">
-            <p className="text-pink-600 font-medium text-sm tracking-wider">THE WEDDING OF</p>
+            <p className="text-pink-600 font-medium text-sm tracking-wider">📸 DAILY MOMENTS</p>
           </div>
           
-          <h1 className="text-5xl font-serif font-bold mb-3" style={{
-            background: 'linear-gradient(to right, #ec4899, #f43f5e, #e11d48)',
+          <h1 className="text-5xl font-bold mb-3" style={{
+            background: 'linear-gradient(to right, #ec4899, #f43f5e, #e11d48, #ec4899)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Arip & Iyan
+            Febyan
           </h1>
           
           <div className="flex items-center justify-center gap-4 mb-4">
             <span className="h-px w-16 bg-pink-300"></span>
-            <FiHeart className="text-pink-500 text-2xl animate-pulse" />
+            <span className="text-2xl">🎬</span>
             <span className="h-px w-16 bg-pink-300"></span>
           </div>
           
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 inline-block shadow-lg">
-            <p className="text-gray-600 text-sm">💒 Wedding Day</p>
-            <p className="text-2xl font-bold text-pink-600">08 . 08 . 2026</p>
+            <p className="text-gray-600 text-sm">Capture every moment ✨</p>
+            <p className="text-xl font-bold text-pink-600">Instan Keseharian</p>
           </div>
         </div>
 
@@ -93,9 +102,9 @@ export default function Home() {
           <div className="text-center mb-4">
             <p className="text-gray-700 font-medium flex items-center justify-center gap-2">
               <FiCamera className="text-pink-500" />
-              Capture Your Moment
+              Instan Capture
             </p>
-            <p className="text-gray-500 text-sm mt-1">Take a photo to share your love & blessings</p>
+            <p className="text-gray-500 text-sm mt-1">Abadikan momen keseharianmu sekarang juga!</p>
           </div>
           
           <CameraCapture onCapture={handleCapture} isUploading={uploading} />
@@ -105,15 +114,15 @@ export default function Home() {
         {uploading && (
           <div className="mb-4 bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-2xl p-4 shadow-lg text-center">
             <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full mx-auto mb-2"></div>
-            <p className="font-medium">Uploading your photo...</p>
+            <p className="font-medium">Mengupload momenmu...</p>
           </div>
         )}
         
         {uploaded && (
           <div className="mb-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-2xl p-4 shadow-lg text-center animate-bounce">
             <FiCheck className="text-3xl mx-auto mb-2" />
-            <p className="font-bold text-lg">Thank You! 🎉</p>
-            <p className="text-sm">Your memory has been saved!</p>
+            <p className="font-bold text-lg">Tersimpan! 🎉</p>
+            <p className="text-sm">Momen keseharianmu berhasil diabadikan!</p>
           </div>
         )}
         
@@ -121,7 +130,7 @@ export default function Home() {
           <div className="mb-4 bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-center">
             <p className="text-red-600 text-sm">{error}</p>
             <button onClick={() => setError(null)} className="text-red-700 underline text-sm mt-1">
-              Dismiss
+              Tutup
             </button>
           </div>
         )}
@@ -136,7 +145,7 @@ export default function Home() {
             className="w-full bg-white border-2 border-pink-300 text-pink-600 px-6 py-4 rounded-2xl hover:bg-pink-50 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-lg font-medium"
           >
             <FiImage className="text-xl" />
-            {showGallery ? 'Hide Gallery' : 'View Wedding Gallery 📸'}
+            {showGallery ? 'Sembunyikan Galeri' : 'Lihat Galeri Keseharian 📸'}
           </button>
           
           <button
@@ -147,14 +156,14 @@ export default function Home() {
             className="w-full bg-white border-2 border-pink-300 text-pink-600 px-6 py-4 rounded-2xl hover:bg-pink-50 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-lg font-medium"
           >
             <FiShare2 className="text-xl" />
-            {showQR ? 'Hide QR Code' : 'Share This Link 📱'}
+            {showQR ? 'Sembunyikan QR' : 'Bagikan Link 📱'}
           </button>
         </div>
 
         {/* Gallery Section */}
         {showGallery && (
           <div className="mb-8 bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-pink-100">
-            <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">💝 Wedding Gallery</h2>
+            <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">📸 Galeri Keseharian</h2>
             <GuestGallery />
           </div>
         )}
@@ -169,9 +178,9 @@ export default function Home() {
         {/* Footer */}
         <div className="text-center pb-8">
           <p className="text-gray-400 text-sm">
-            Made with <FiHeart className="inline text-pink-500 animate-pulse" /> by Arip & Iyan
+            Instan Keseharian <span className="font-bold text-pink-500">Febyan</span> ✨
           </p>
-          <p className="text-gray-300 text-xs mt-1">08.08.2026</p>
+          <p className="text-gray-300 text-xs mt-1">Capture. Share. Remember.</p>
           <a href="/admin/login" className="text-gray-300 hover:text-gray-400 text-xs mt-2 inline-block">
             •
           </a>

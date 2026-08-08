@@ -1,6 +1,6 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
-import { FiCamera, FiRefreshCw, FiCheck, FiX } from 'react-icons/fi'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { FiCamera, FiRefreshCw, FiCheck, FiX, FiUser } from 'react-icons/fi'
 
 export default function CameraCapture({ onCapture, isUploading }) {
   const videoRef = useRef(null)
@@ -9,6 +9,15 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const [error, setError] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
   const [cameraReady, setCameraReady] = useState(false)
+  const [senderName, setSenderName] = useState('')
+  const [showNameInput, setShowNameInput] = useState(false)
+
+  const resetCamera = useCallback(() => {
+    setPhoto(null)
+    setShowNameInput(false)
+    setSenderName('')
+    setError(null)
+  }, [])
 
   useEffect(() => {
     startCamera()
@@ -50,19 +59,27 @@ export default function CameraCapture({ onCapture, isUploading }) {
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
     const ctx = canvas.getContext('2d')
+    
+    // SELALU flip horizontal - hasil foto NORMAL
+    ctx.translate(canvas.width, 0)
+    ctx.scale(-1, 1)
     ctx.drawImage(video, 0, 0)
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
     
     const photoData = canvas.toDataURL('image/jpeg', 0.9)
     setPhoto(photoData)
+    setShowNameInput(true)
   }
 
   const retakePhoto = () => {
     setPhoto(null)
+    setShowNameInput(false)
+    setSenderName('')
   }
 
   const confirmPhoto = () => {
     if (photo) {
-      onCapture(photo)
+      onCapture(photo, senderName.trim() || 'Anonymous', resetCamera)
     }
   }
 
@@ -98,13 +115,33 @@ export default function CameraCapture({ onCapture, isUploading }) {
             playsInline
             muted
             className="w-full"
+            style={facingMode === 'user' ? { transform: 'scaleX(-1)' } : {}}
           />
         )}
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
+      {/* Name Input */}
+      {showNameInput && photo && (
+        <div className="mt-4 bg-white rounded-2xl p-4 shadow-lg border-2 border-pink-200">
+          <div className="flex items-center gap-2 mb-2">
+            <FiUser className="text-pink-500" />
+            <p className="text-sm font-medium text-gray-700">Nama (opsional)</p>
+          </div>
+          <input
+            type="text"
+            value={senderName}
+            onChange={(e) => setSenderName(e.target.value)}
+            placeholder="Tulis namamu..."
+            maxLength={30}
+            className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-pink-500 focus:outline-none text-sm"
+          />
+          <p className="text-xs text-gray-400 mt-1">{senderName.length}/30</p>
+        </div>
+      )}
+
       {/* Controls */}
-      <div className="mt-6 flex justify-center gap-4">
+      <div className="mt-4 flex justify-center gap-4">
         {!photo ? (
           <>
             <button
@@ -147,7 +184,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
             </button>
             
             <span className="text-xs text-gray-500 ml-1">
-              {isUploading ? 'Uploading...' : 'Confirm'}
+              {isUploading ? 'Uploading...' : 'Upload'}
             </span>
           </div>
         )}

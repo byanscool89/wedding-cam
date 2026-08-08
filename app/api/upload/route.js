@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { image } = body
+    const { image, senderName } = body
     
     if (!image) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 })
@@ -18,7 +18,6 @@ export async function POST(request) {
     const fileName = `wedding-${Date.now()}.jpg`
     const filePath = `public/${fileName}`
     
-    // Dynamic import supabase
     const { supabaseAdmin } = await import('@/lib/supabase')
     
     // Upload to Supabase Storage
@@ -48,18 +47,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to get URL' }, { status: 500 })
     }
     
-    // Save to database
+    // Save to database WITH sender name
     const { error: dbError } = await supabaseAdmin
       .from('photos')
       .insert([{
         file_name: fileName,
         file_path: filePath,
-        public_url: publicUrl
+        public_url: publicUrl,
+        sender_name: senderName || 'Anonymous'
       }])
     
     if (dbError) {
       console.error('Database error:', dbError)
-      // Tetap return success walaupun db error
     }
     
     return NextResponse.json({ success: true, url: publicUrl })

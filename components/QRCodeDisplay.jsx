@@ -11,6 +11,7 @@ export default function QRCodeDisplay() {
 
   return (
     <div className="text-center">
+      <p className="text-gray-600 mb-3 font-medium">Scan QR Code ini 📱</p>
       <div className="bg-white p-4 rounded-2xl inline-block shadow-inner">
         {url && (
           <QRCode
@@ -22,8 +23,8 @@ export default function QRCodeDisplay() {
           />
         )}
       </div>
-      <p className="text-gray-600 mt-3 font-medium">Scan to open camera 📷</p>
-      <p className="text-gray-400 text-xs mt-1">Share this with other guests!</p>
+      <p className="text-gray-500 mt-3 text-sm">Buka kamera HP & scan kode di atas</p>
+      <p className="text-gray-400 text-xs mt-1">Bagikan ke teman-temanmu!</p>
     </div>
   )
 }

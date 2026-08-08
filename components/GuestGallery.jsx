@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { FiImage, FiDownload } from 'react-icons/fi'
+import { FiImage, FiDownload, FiUser } from 'react-icons/fi'
 
 export default function GuestGallery() {
   const [photos, setPhotos] = useState([])
@@ -9,7 +9,7 @@ export default function GuestGallery() {
 
   useEffect(() => {
     fetchPhotos()
-    const interval = setInterval(fetchPhotos, 15000) // Auto refresh every 15s
+    const interval = setInterval(fetchPhotos, 15000)
     return () => clearInterval(interval)
   }, [])
 
@@ -48,28 +48,36 @@ export default function GuestGallery() {
 
   return (
     <>
-      {/* Photo Grid */}
       <div className="grid grid-cols-2 gap-3">
         {photos.map(photo => (
           <div
             key={photo.id}
             onClick={() => setSelectedPhoto(photo)}
-            className="relative group cursor-pointer bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all aspect-square"
+            className="relative group cursor-pointer bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all"
           >
             <img
               src={photo.public_url}
               alt="Wedding moment"
-              className="w-full h-full object-cover"
+              className="w-full aspect-square object-cover"
             />
             
-            {/* Hover overlay - DOWNLOAD ONLY, NO DELETE */}
+            {/* Sender name badge */}
+            {photo.sender_name && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                <p className="text-white text-xs flex items-center gap-1">
+                  <FiUser className="text-xs" />
+                  {photo.sender_name}
+                </p>
+              </div>
+            )}
+            
+            {/* Hover overlay */}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
               <a
                 href={photo.public_url}
                 download
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white p-3 rounded-full hover:scale-110 transition-all shadow-lg"
-                title="Download photo"
               >
                 <FiDownload className="text-gray-800 text-lg" />
               </a>
@@ -95,15 +103,22 @@ export default function GuestGallery() {
             ✕
           </button>
           
-          <div className="max-w-4xl max-h-[85vh]">
+          <div className="max-w-4xl max-h-[85vh] text-center">
             <img
               src={selectedPhoto.public_url}
               alt="Selected"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              className="max-w-full max-h-[75vh] object-contain rounded-lg"
             />
+            
+            {/* Sender name in lightbox */}
+            {selectedPhoto.sender_name && (
+              <p className="text-white mt-3 flex items-center justify-center gap-2">
+                <FiUser />
+                <span className="font-medium">{selectedPhoto.sender_name}</span>
+              </p>
+            )}
           </div>
           
-          {/* Download button in lightbox */}
           <a
             href={selectedPhoto.public_url}
             download
