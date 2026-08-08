@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request) {
   try {
@@ -10,18 +9,20 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No image provided' }, { status: 400 })
     }
 
-    // Convert base64 to buffer
     const base64Data = image.split(',')[1]
     if (!base64Data) {
-      return NextResponse.json({ error: 'Invalid image data' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid image format' }, { status: 400 })
     }
     
     const buffer = Buffer.from(base64Data, 'base64')
     const fileName = `wedding-${Date.now()}.jpg`
     const filePath = `public/${fileName}`
     
+    // Dynamic import supabase
+    const { supabaseAdmin } = await import('@/lib/supabase')
+    
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabaseAdmin
+    const { error: uploadError } = await supabaseAdmin
       .storage
       .from('wedding-photos')
       .upload(filePath, buffer, {
@@ -31,8 +32,8 @@ export async function POST(request) {
       })
     
     if (uploadError) {
-      console.error('Storage upload error:', uploadError)
-      return NextResponse.json({ error: uploadError.message }, { status: 500 })
+      console.error('Storage error:', uploadError)
+      return NextResponse.json({ error: 'Upload failed: ' + uploadError.message }, { status: 500 })
     }
     
     // Get public URL
@@ -44,7 +45,7 @@ export async function POST(request) {
     const publicUrl = urlData?.publicUrl
     
     if (!publicUrl) {
-      return NextResponse.json({ error: 'Failed to get public URL' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to get URL' }, { status: 500 })
     }
     
     // Save to database
@@ -57,22 +58,16 @@ export async function POST(request) {
       }])
     
     if (dbError) {
-      console.error('Database insert error:', dbError)
-      // File udah keupload, tapi database gagal
-      // Tetap return success dengan URL
-      return NextResponse.json({ 
-        success: true, 
-        url: publicUrl,
-        warning: 'Photo uploaded but failed to save metadata'
-      })
+      console.error('Database error:', dbError)
+      // Tetap return success walaupun db error
     }
     
     return NextResponse.json({ success: true, url: publicUrl })
     
   } catch (error) {
-    console.error('Upload error:', error)
+    console.error('API error:', error)
     return NextResponse.json({ 
-      error: error.message || 'Upload failed' 
+      error: 'Server error: ' + error.message 
     }, { status: 500 })
   }
 }
