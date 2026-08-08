@@ -1,24 +1,17 @@
 @import "tailwindcss";
 
+body {
+  margin: 0;
+  padding: 0;
+}
+
 @keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(5deg); }
+  66% { transform: translateY(-5px) rotate(-5deg); }
 }
 
-@utility animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@utility animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-@utility animation-delay-4000 {
-  animation-delay: 4s;
+@keyframes flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
 }

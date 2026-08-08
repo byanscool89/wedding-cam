@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { FiCamera, FiRefreshCw, FiCheck, FiX, FiUpload } from 'react-icons/fi'
+import { FiCamera, FiRefreshCw, FiCheck, FiX } from 'react-icons/fi'
 
 export default function CameraCapture({ onCapture, isUploading }) {
   const videoRef = useRef(null)
@@ -8,6 +8,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const [photo, setPhoto] = useState(null)
   const [error, setError] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
+  const [flash, setFlash] = useState(false)
 
   useEffect(() => {
     startCamera()
@@ -45,6 +46,10 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
+    
+    // Trigger flash
+    setFlash(true)
+    setTimeout(() => setFlash(false), 300)
     
     const video = videoRef.current
     const canvas = canvasRef.current
@@ -89,6 +94,11 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
+      {/* Flash Effect */}
+      {flash && (
+        <div className="fixed inset-0 bg-white z-50 animate-flash pointer-events-none"></div>
+      )}
+
       {/* Frame */}
       <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black">
         {/* Decorative corners */}
@@ -138,7 +148,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
             <div className="w-16"></div>
           </>
         ) : (
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <button
               onClick={retakePhoto}
               disabled={isUploading}
@@ -159,8 +169,8 @@ export default function CameraCapture({ onCapture, isUploading }) {
               )}
             </button>
             
-            <span className="text-xs text-gray-500 self-center ml-2">
-              {isUploading ? 'Uploading...' : 'Confirm'}
+            <span className="text-sm text-gray-500 ml-1">
+              {isUploading ? 'Uploading...' : 'Confirm?'}
             </span>
           </div>
         )}
