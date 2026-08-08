@@ -7,7 +7,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const canvasRef = useRef(null)
   const [photo, setPhoto] = useState(null)
   const [error, setError] = useState(null)
-  const [facingMode, setFacingMode] = useState('environment')
+  const [facingMode, setFacingMode] = useState('user') // Default kamera depan
   const [cameraReady, setCameraReady] = useState(false)
   const [senderName, setSenderName] = useState('')
   const [showNameInput, setShowNameInput] = useState(false)
@@ -26,13 +26,24 @@ export default function CameraCapture({ onCapture, isUploading }) {
         videoRef.current.srcObject.getTracks().forEach(track => track.stop())
       }
     }
-  }, [])
+  }, [facingMode])
 
   const startCamera = async () => {
     try {
       setError(null)
+      setCameraReady(false)
+      
+      // Stop previous stream
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode },
+        video: { 
+          facingMode: facingMode,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        },
         audio: false
       })
       
@@ -41,14 +52,17 @@ export default function CameraCapture({ onCapture, isUploading }) {
         setCameraReady(true)
       }
     } catch (err) {
-      setError('Please allow camera access to take photos')
+      setError('Tidak bisa mengakses kamera. Izinkan akses kamera.')
       console.error('Camera error:', err)
     }
   }
 
-  const switchCamera = () => {
-    setFacingMode(prev => prev === 'environment' ? 'user' : 'environment')
-    startCamera()
+  const setFrontCamera = () => {
+    setFacingMode('user')
+  }
+
+  const setBackCamera = () => {
+    setFacingMode('environment')
   }
 
   const capturePhoto = () => {
@@ -59,6 +73,17 @@ export default function CameraCapture({ onCapture, isUploading }) {
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
     const ctx = canvas.getContext('2d')
+    
+    // Reset transform
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    
+    // Kamera depan: flip horizontal (biar ga mirror)
+    // Kamera belakang: normal
+    if (facingMode === 'user') {
+      ctx.translate(canvas.width, 0)
+      ctx.scale(-1, 1)
+    }
+    
     ctx.drawImage(video, 0, 0)
     
     const photoData = canvas.toDataURL('image/jpeg', 0.9)
@@ -90,7 +115,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
             }}
             className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-all text-sm"
           >
-            Try Again
+            Coba Lagi
           </button>
         </div>
       </div>
@@ -99,6 +124,32 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
+      {/* Camera switch buttons - DUA TOMBOL */}
+      {!photo && (
+        <div className="flex justify-center gap-2 mb-4">
+          <button
+            onClick={setFrontCamera}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              facingMode === 'user'
+                ? 'bg-pink-500 text-white shadow-lg'
+                : 'bg-white text-gray-600 border-2 border-gray-200'
+            }`}
+          >
+            🤳 Depan
+          </button>
+          <button
+            onClick={setBackCamera}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+              facingMode === 'environment'
+                ? 'bg-pink-500 text-white shadow-lg'
+                : 'bg-white text-gray-600 border-2 border-gray-200'
+            }`}
+          >
+            📷 Belakang
+          </button>
+        </div>
+      )}
+
       {/* Frame */}
       <div className="relative rounded-2xl overflow-hidden shadow-xl border-3 border-white bg-black">
         {photo ? (
@@ -137,24 +188,13 @@ export default function CameraCapture({ onCapture, isUploading }) {
       {/* Controls */}
       <div className="mt-4 flex justify-center gap-4">
         {!photo ? (
-          <>
-            <button
-              onClick={switchCamera}
-              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all border-2 border-gray-200"
-            >
-              <FiRefreshCw className="text-xl text-gray-700" />
-            </button>
-            
-            <button
-              onClick={capturePhoto}
-              disabled={!cameraReady || isUploading}
-              className="bg-gradient-to-r from-pink-500 to-rose-500 p-5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
-            >
-              <FiCamera className="text-2xl text-white" />
-            </button>
-            
-            <div className="w-14"></div>
-          </>
+          <button
+            onClick={capturePhoto}
+            disabled={!cameraReady || isUploading}
+            className="bg-gradient-to-r from-pink-500 to-rose-500 p-5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
+          >
+            <FiCamera className="text-2xl text-white" />
+          </button>
         ) : (
           <div className="flex gap-4 items-center">
             <button
@@ -183,6 +223,12 @@ export default function CameraCapture({ onCapture, isUploading }) {
           </div>
         )}
       </div>
+      
+      {!photo && (
+        <p className="text-center text-gray-400 text-xs mt-3">
+          {facingMode === 'user' ? '📸 Kamera Depan' : '📸 Kamera Belakang'}
+        </p>
+      )}
     </div>
   )
 }
