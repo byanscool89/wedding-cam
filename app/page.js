@@ -9,6 +9,12 @@ export default function Home() {
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
   const [error, setError] = useState(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Fix hydration issues
+  useState(() => {
+    setMounted(true)
+  }, [])
 
   const handleCapture = async (photoData) => {
     setUploading(true)
@@ -28,7 +34,7 @@ export default function Home() {
       }
       
       setUploaded(true)
-      setTimeout(() => setUploaded(false), 5000)
+      setTimeout(() => setUploaded(false), 3000)
     } catch (err) {
       setError(err.message)
       console.error('Upload error:', err)
@@ -37,13 +43,21 @@ export default function Home() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-600"></div>
+      </div>
+    )
+  }
+
   return (
     <main className="min-h-screen relative overflow-hidden">
       {/* Floating decorations */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
         <div className="absolute top-10 left-10 text-4xl animate-float opacity-20">💕</div>
-        <div className="absolute top-20 right-20 text-3xl animate-float animation-delay-2000 opacity-20">✨</div>
-        <div className="absolute bottom-20 left-20 text-3xl animate-float animation-delay-4000 opacity-20">🌸</div>
+        <div className="absolute top-20 right-20 text-3xl animate-float opacity-20" style={{animationDelay: '2s'}}>✨</div>
+        <div className="absolute bottom-20 left-20 text-3xl animate-float opacity-20" style={{animationDelay: '4s'}}>🌸</div>
         <div className="absolute bottom-10 right-10 text-4xl animate-float opacity-20">💝</div>
       </div>
 
@@ -89,7 +103,7 @@ export default function Home() {
                 onClick={() => setError(null)}
                 className="text-red-700 underline mt-2"
               >
-                Try again
+                Dismiss
               </button>
             </div>
           )}
@@ -112,15 +126,15 @@ export default function Home() {
           )}
         </div>
 
-        {/* Admin Link - tersembunyi */}
-<div className="mt-8 text-center">
-  <a 
-    href="/admin/login" 
-    className="text-gray-300 hover:text-gray-400 text-sm transition-colors"
-  >
-    •
-  </a>
-</div>
+        {/* Admin Link */}
+        <div className="mt-8 text-center">
+          <a 
+            href="/admin/login" 
+            className="text-gray-300 hover:text-gray-400 text-sm transition-colors"
+          >
+            •
+          </a>
+        </div>
 
         {/* Footer */}
         <div className="mt-16 text-center text-gray-400 text-sm">
