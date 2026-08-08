@@ -1,0 +1,11 @@
+{
+  "name": "Wedding Photo Booth",
+  "short_name": "WedCam",
+  "description": "Capture wedding moments",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fce7f3",
+  "theme_color": "#ec4899",
+  "icons": []
+}
