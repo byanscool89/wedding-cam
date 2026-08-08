@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { FiCamera, FiRefreshCw, FiX } from 'react-icons/fi'
+import { FiCamera, FiRefreshCw, FiCheck, FiX, FiUpload } from 'react-icons/fi'
 
 export default function CameraCapture({ onCapture, isUploading }) {
   const videoRef = useRef(null)
@@ -55,28 +55,30 @@ export default function CameraCapture({ onCapture, isUploading }) {
     
     const photoData = canvas.toDataURL('image/jpeg', 0.9)
     setPhoto(photoData)
-    
-    // Auto upload
-    if (onCapture) {
-      onCapture(photoData)
-    }
   }
 
   const retakePhoto = () => {
     setPhoto(null)
   }
 
+  const confirmPhoto = () => {
+    if (photo && onCapture) {
+      onCapture(photo)
+    }
+  }
+
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center p-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center max-w-md">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className="flex flex-col items-center justify-center p-6">
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center max-w-md shadow-lg">
+          <div className="text-4xl mb-4">😔</div>
+          <p className="text-red-600 mb-6">{error}</p>
           <button
             onClick={() => {
               setError(null)
               startCamera()
             }}
-            className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700"
+            className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-full hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg"
           >
             Try Again
           </button>
@@ -87,8 +89,19 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Camera/Photo */}
-      <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white bg-black">
+      {/* Frame */}
+      <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black">
+        {/* Decorative corners */}
+        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-pink-400 rounded-tl-2xl z-10"></div>
+        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-pink-400 rounded-tr-2xl z-10"></div>
+        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-pink-400 rounded-bl-2xl z-10"></div>
+        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-pink-400 rounded-br-2xl z-10"></div>
+        
+        {/* Watermark */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/80 backdrop-blur-sm px-4 py-1 rounded-full">
+          <p className="text-xs font-semibold text-pink-600">💑 Imam & Arip</p>
+        </div>
+        
         {photo ? (
           <img src={photo} alt="Captured" className="w-full" />
         ) : (
@@ -104,40 +117,60 @@ export default function CameraCapture({ onCapture, isUploading }) {
       </div>
 
       {/* Buttons */}
-      <div className="mt-6 flex justify-center gap-4">
+      <div className="mt-8 flex justify-center gap-4">
         {!photo ? (
           <>
             <button
               onClick={switchCamera}
-              className="bg-white/80 backdrop-blur-sm p-4 rounded-full shadow-lg hover:bg-white"
+              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all border-2 border-gray-200"
             >
               <FiRefreshCw className="text-2xl text-gray-700" />
             </button>
+            
             <button
               onClick={capturePhoto}
               disabled={isUploading}
-              className="bg-white p-6 rounded-full shadow-lg hover:scale-110 transition-all border-4 border-pink-300 disabled:opacity-50"
+              className="bg-gradient-to-r from-pink-500 to-rose-500 p-5 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all disabled:opacity-50"
             >
-              <FiCamera className="text-3xl text-pink-600" />
+              <FiCamera className="text-3xl text-white" />
             </button>
+            
             <div className="w-16"></div>
           </>
         ) : (
-          <button
-            onClick={retakePhoto}
-            disabled={isUploading}
-            className="bg-red-500 p-4 rounded-full shadow-lg hover:bg-red-600 text-white disabled:opacity-50"
-          >
-            <FiX className="text-2xl" />
-          </button>
+          <div className="flex gap-4">
+            <button
+              onClick={retakePhoto}
+              disabled={isUploading}
+              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all border-2 border-red-300 disabled:opacity-50"
+            >
+              <FiX className="text-2xl text-red-500" />
+            </button>
+            
+            <button
+              onClick={confirmPhoto}
+              disabled={isUploading}
+              className="bg-gradient-to-r from-green-400 to-emerald-500 p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50"
+            >
+              {isUploading ? (
+                <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
+              ) : (
+                <FiCheck className="text-2xl text-white" />
+              )}
+            </button>
+            
+            <span className="text-xs text-gray-500 self-center ml-2">
+              {isUploading ? 'Uploading...' : 'Confirm'}
+            </span>
+          </div>
         )}
       </div>
       
-      {isUploading && (
-        <div className="mt-4 text-center">
-          <div className="animate-spin h-6 w-6 border-2 border-pink-600 border-t-transparent rounded-full mx-auto"></div>
-          <p className="text-sm text-gray-600 mt-2">Uploading...</p>
-        </div>
+      {/* Instruction */}
+      {!photo && (
+        <p className="text-center text-gray-500 text-sm mt-4">
+          Tap the pink button to capture 📸
+        </p>
       )}
     </div>
   )
