@@ -8,24 +8,20 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const [photo, setPhoto] = useState(null)
   const [error, setError] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
-  const [flash, setFlash] = useState(false)
+  const [cameraReady, setCameraReady] = useState(false)
 
   useEffect(() => {
     startCamera()
-    return () => stopCamera()
-  }, [facingMode])
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop())
+      }
     }
-  }
+  }, [])
 
   const startCamera = async () => {
     try {
-      stopCamera()
       setError(null)
-      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facingMode },
         audio: false
@@ -33,23 +29,21 @@ export default function CameraCapture({ onCapture, isUploading }) {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        setCameraReady(true)
       }
     } catch (err) {
+      setError('Please allow camera access to take photos')
       console.error('Camera error:', err)
-      setError('Could not access camera. Please allow camera permission.')
     }
   }
 
   const switchCamera = () => {
     setFacingMode(prev => prev === 'environment' ? 'user' : 'environment')
+    startCamera()
   }
 
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
-    
-    // Trigger flash
-    setFlash(true)
-    setTimeout(() => setFlash(false), 300)
     
     const video = videoRef.current
     const canvas = canvasRef.current
@@ -67,7 +61,7 @@ export default function CameraCapture({ onCapture, isUploading }) {
   }
 
   const confirmPhoto = () => {
-    if (photo && onCapture) {
+    if (photo) {
       onCapture(photo)
     }
   }
@@ -75,15 +69,14 @@ export default function CameraCapture({ onCapture, isUploading }) {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center p-6">
-        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center max-w-md shadow-lg">
-          <div className="text-4xl mb-4">😔</div>
-          <p className="text-red-600 mb-6">{error}</p>
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 text-center">
+          <p className="text-red-600 mb-4 text-sm">{error}</p>
           <button
             onClick={() => {
               setError(null)
               startCamera()
             }}
-            className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-full hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg"
+            className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition-all text-sm"
           >
             Try Again
           </button>
@@ -94,26 +87,8 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Flash Effect */}
-      {flash && (
-        <div className="fixed inset-0 bg-white z-50 pointer-events-none" 
-          style={{ animation: 'flash 0.3s ease-out forwards' }}
-        />
-      )}
-
       {/* Frame */}
-      <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-black">
-        {/* Decorative corners */}
-        <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-pink-400 rounded-tl-2xl z-10" />
-        <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-pink-400 rounded-tr-2xl z-10" />
-        <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-pink-400 rounded-bl-2xl z-10" />
-        <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-pink-400 rounded-br-2xl z-10" />
-        
-        {/* Watermark */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/80 backdrop-blur-sm px-4 py-1 rounded-full">
-          <p className="text-xs font-semibold text-pink-600">💑 Imam & Arip</p>
-        </div>
-        
+      <div className="relative rounded-2xl overflow-hidden shadow-xl border-3 border-white bg-black">
         {photo ? (
           <img src={photo} alt="Captured" className="w-full" />
         ) : (
@@ -128,62 +103,55 @@ export default function CameraCapture({ onCapture, isUploading }) {
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Buttons */}
-      <div className="mt-8 flex justify-center gap-4">
+      {/* Controls */}
+      <div className="mt-6 flex justify-center gap-4">
         {!photo ? (
           <>
             <button
               onClick={switchCamera}
-              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all border-2 border-gray-200"
+              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all border-2 border-gray-200"
             >
-              <FiRefreshCw className="text-2xl text-gray-700" />
+              <FiRefreshCw className="text-xl text-gray-700" />
             </button>
             
             <button
               onClick={capturePhoto}
-              disabled={isUploading}
-              className="bg-gradient-to-r from-pink-500 to-rose-500 p-5 rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all disabled:opacity-50"
+              disabled={!cameraReady || isUploading}
+              className="bg-gradient-to-r from-pink-500 to-rose-500 p-5 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50"
             >
-              <FiCamera className="text-3xl text-white" />
+              <FiCamera className="text-2xl text-white" />
             </button>
             
-            <div className="w-16" />
+            <div className="w-14"></div>
           </>
         ) : (
           <div className="flex gap-4 items-center">
             <button
               onClick={retakePhoto}
               disabled={isUploading}
-              className="bg-white p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all border-2 border-red-300 disabled:opacity-50"
+              className="bg-white p-4 rounded-full shadow-lg border-2 border-red-300 active:scale-95 transition-all disabled:opacity-50"
             >
-              <FiX className="text-2xl text-red-500" />
+              <FiX className="text-xl text-red-500" />
             </button>
             
             <button
               onClick={confirmPhoto}
               disabled={isUploading}
-              className="bg-gradient-to-r from-green-400 to-emerald-500 p-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50"
+              className="bg-gradient-to-r from-green-400 to-emerald-500 p-4 rounded-full shadow-lg active:scale-95 transition-all disabled:opacity-50"
             >
               {isUploading ? (
-                <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full" />
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
               ) : (
-                <FiCheck className="text-2xl text-white" />
+                <FiCheck className="text-xl text-white" />
               )}
             </button>
             
-            <span className="text-sm text-gray-500 ml-1">
-              {isUploading ? 'Uploading...' : 'Confirm?'}
+            <span className="text-xs text-gray-500 ml-1">
+              {isUploading ? 'Uploading...' : 'Confirm'}
             </span>
           </div>
         )}
       </div>
-      
-      {/* Instruction */}
-      {!photo && (
-        <p className="text-center text-gray-500 text-sm mt-4">
-          Tap the pink button to capture 📸
-        </p>
-      )}
     </div>
   )
 }
