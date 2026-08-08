@@ -9,7 +9,6 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const [photo, setPhoto] = useState(null)
   const [error, setError] = useState(null)
   const [cameraReady, setCameraReady] = useState(false)
-  const [countdown, setCountdown] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
 
   const startCamera = useCallback(async () => {
@@ -56,37 +55,23 @@ export default function CameraCapture({ onCapture, isUploading }) {
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return
     
-    // Start countdown
-    setCountdown(3)
-    const countdownInterval = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(countdownInterval)
-          // Take the photo
-          const video = videoRef.current
-          const canvas = canvasRef.current
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(video, 0, 0)
-          
-          const photoData = canvas.toDataURL('image/jpeg', 0.9)
-          setPhoto(photoData)
-          return null
-        }
-        return prev - 1
-      })
-    }, 1000)
+    // Langsung capture tanpa countdown
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0)
+    
+    const photoData = canvas.toDataURL('image/jpeg', 0.9)
+    setPhoto(photoData)
+    
+    // Auto upload langsung
+    onCapture(photoData)
   }
 
   const retakePhoto = () => {
     setPhoto(null)
-  }
-
-  const confirmPhoto = () => {
-    if (photo) {
-      onCapture(photo)
-    }
   }
 
   if (error) {
@@ -110,15 +95,6 @@ export default function CameraCapture({ onCapture, isUploading }) {
 
   return (
     <div className="relative w-full max-w-md mx-auto">
-      {/* Countdown Overlay */}
-      {countdown && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50 rounded-2xl">
-          <span className="text-white text-8xl font-bold animate-ping">
-            {countdown}
-          </span>
-        </div>
-      )}
-
       {/* Camera View or Photo Preview */}
       <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
         {photo ? (
@@ -158,24 +134,31 @@ export default function CameraCapture({ onCapture, isUploading }) {
           <>
             <button
               onClick={retakePhoto}
-              className="bg-red-500 p-4 rounded-full shadow-lg hover:bg-red-600 text-white transition-all"
+              disabled={isUploading}
+              className="bg-red-500 p-4 rounded-full shadow-lg hover:bg-red-600 text-white transition-all disabled:opacity-50"
             >
               <FiX className="text-2xl" />
             </button>
-            <button
-              onClick={confirmPhoto}
-              disabled={isUploading}
-              className="bg-green-500 p-4 rounded-full shadow-lg hover:bg-green-600 text-white transition-all disabled:opacity-50"
-            >
-              {isUploading ? (
+            {isUploading && (
+              <div className="bg-blue-500 p-4 rounded-full shadow-lg text-white">
                 <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full"></div>
-              ) : (
-                <FiCheck className="text-2xl" />
-              )}
-            </button>
+              </div>
+            )}
           </>
         )}
       </div>
+      
+      {/* Flash effect pas foto diambil */}
+      <div className={`fixed inset-0 bg-white z-50 pointer-events-none transition-opacity duration-150 ${photo ? 'opacity-100' : 'opacity-0'}`} 
+        style={{ transitionDuration: '150ms' }}
+        onTransitionEnd={(e) => {
+          if (e.currentTarget.style.opacity === '1') {
+            setTimeout(() => {
+              e.currentTarget.style.opacity = '0'
+            }, 150)
+          }
+        }}
+      />
     </div>
   )
 }
