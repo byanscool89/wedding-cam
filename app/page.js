@@ -9,12 +9,6 @@ export default function Home() {
   const [uploading, setUploading] = useState(false)
   const [uploaded, setUploaded] = useState(false)
   const [error, setError] = useState(null)
-  const [mounted, setMounted] = useState(false)
-
-  // Fix hydration issues
-  useState(() => {
-    setMounted(true)
-  }, [])
 
   const handleCapture = async (photoData) => {
     setUploading(true)
@@ -27,9 +21,8 @@ export default function Home() {
         body: JSON.stringify({ image: photoData })
       })
       
-      const data = await response.json()
-      
       if (!response.ok) {
+        const data = await response.json()
         throw new Error(data.error || 'Upload failed')
       }
       
@@ -43,101 +36,61 @@ export default function Home() {
     }
   }
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-pink-200 border-t-pink-600"></div>
-      </div>
-    )
-  }
-
   return (
-    <main className="min-h-screen relative overflow-hidden">
-      {/* Floating decorations */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute top-10 left-10 text-4xl animate-float opacity-20">💕</div>
-        <div className="absolute top-20 right-20 text-3xl animate-float opacity-20" style={{animationDelay: '2s'}}>✨</div>
-        <div className="absolute bottom-20 left-20 text-3xl animate-float opacity-20" style={{animationDelay: '4s'}}>🌸</div>
-        <div className="absolute bottom-10 right-10 text-4xl animate-float opacity-20">💝</div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
+    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50">
+      <div className="container mx-auto px-4 py-8 max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-4">
-            Our Wedding Moments
+          <h1 className="text-4xl font-bold text-pink-600 mb-2">
+            Our Wedding 📸
           </h1>
-          <p className="text-xl text-gray-600 mb-2">
-            Capture & share your favorite moments with us!
-          </p>
-          <p className="text-gray-500 flex items-center justify-center gap-2">
-            <FiCamera className="text-pink-500" />
-            Take a photo to join our memory collection
+          <p className="text-gray-600">
+            Capture & share your moments with us!
           </p>
         </div>
 
-        {/* Camera Section */}
-        <div className="max-w-lg mx-auto">
-          <CameraCapture onCapture={handleCapture} isUploading={uploading} />
-          
-          {/* Status Messages */}
-          {uploading && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-              <div className="animate-spin h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
-              <p className="text-blue-600 font-medium">Uploading your photo...</p>
-            </div>
-          )}
-          
-          {uploaded && (
-            <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4 text-center animate-bounce">
-              <FiCheck className="text-3xl text-green-600 mx-auto mb-2" />
-              <p className="text-green-600 font-medium">Photo shared successfully! 🎉</p>
-              <p className="text-green-500 text-sm">Thank you for capturing this moment!</p>
-            </div>
-          )}
-          
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-              <p className="text-red-600">{error}</p>
-              <button 
-                onClick={() => setError(null)}
-                className="text-red-700 underline mt-2"
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Camera */}
+        <CameraCapture onCapture={handleCapture} isUploading={uploading} />
+        
+        {/* Upload Success */}
+        {uploaded && (
+          <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+            <FiCheck className="text-3xl text-green-600 mx-auto mb-2" />
+            <p className="text-green-600 font-medium">Photo shared! 🎉</p>
+          </div>
+        )}
+        
+        {/* Upload Error */}
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
 
-        {/* QR Code Section */}
-        <div className="mt-12 text-center">
+        {/* QR Code */}
+        <div className="mt-8 text-center">
           <button
             onClick={() => setShowQR(!showQR)}
-            className="bg-pink-600 text-white px-6 py-3 rounded-full hover:bg-pink-700 transition-all flex items-center gap-2 mx-auto"
+            className="bg-pink-600 text-white px-6 py-3 rounded-full hover:bg-pink-700 flex items-center gap-2 mx-auto"
           >
             <FiShare2 />
-            {showQR ? 'Hide QR Code' : 'Show QR Code to Share'}
+            {showQR ? 'Hide QR' : 'Share QR Code'}
           </button>
           
           {showQR && (
-            <div className="mt-8 flex justify-center">
+            <div className="mt-6">
               <QRCodeDisplay />
             </div>
           )}
         </div>
 
-        {/* Admin Link */}
-        <div className="mt-8 text-center">
-          <a 
-            href="/admin/login" 
-            className="text-gray-300 hover:text-gray-400 text-sm transition-colors"
-          >
-            •
-          </a>
+        {/* Admin link */}
+        <div className="mt-12 text-center">
+          <a href="/admin/login" className="text-gray-300 text-sm">•</a>
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center text-gray-400 text-sm">
+        <div className="mt-8 text-center text-gray-400 text-sm">
           <p>Made with <FiHeart className="inline text-pink-500" /> for our special day</p>
         </div>
       </div>
